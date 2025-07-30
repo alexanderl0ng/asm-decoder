@@ -1,0 +1,7 @@
+build/
+
+data/*
+!data/*.asm
+
+.DS_Store
+
