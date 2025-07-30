@@ -6,18 +6,6 @@
 
 using u8 = uint8_t;
 
-/*
-byte 1
-bit 1 - 6 - OPCODE specific the instruction mov is 100010
-bit 7 - D Direction is to register/from register
-bit 8 - W Word/Byte operation
-
-byte 2
-bit 1 - 2 - MOD
-bit 3 - 5 - REG
-bit 6 - 8 - R/M
-*/
-
 class InstructionDecoder {
     std::vector<u8> code;
     std::size_t pc = 0;
@@ -106,8 +94,13 @@ private:
 };
 
 
-int main() {
-    InstructionDecoder decoder("data/test_0038");
+int main(int argc, char* argv[]) {
+
+    if (argc != 2) {
+        std::cout << "[ERROR] Usage: " << argv[0] << " <filepath>" << std::endl;
+    }
+
+    InstructionDecoder decoder(argv[1]);
     decoder.decode();
 
     return 0;
