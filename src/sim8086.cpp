@@ -43,8 +43,16 @@ private:
             opcode_table[i] = &InstructionDecoder::decodeMovRegRem;
         }
 
+        for (i16 i = 0xA0; i <= 0xA3; i++) {
+            opcode_table[i] = &InstructionDecoder::decodeMovAccMem;
+        }
+
         for (i16 i = 0xB0; i <= 0xBF; i++) {
             opcode_table[i] = &InstructionDecoder::decodeImmToReg;
+        }
+
+        for (i16 i = 0xC6; i <= 0xC7; i++) {
+            opcode_table[i] = &InstructionDecoder::decodeImmToMem;
         }
 
         table_initialized = true;
@@ -54,6 +62,70 @@ private:
         std::cout << "[WARNING] Unknown opcode " << std::format("0x{:02x}", int(opcode))
             << " at position " << std::dec << pc << '\n';
         pc++;
+    }
+
+    void decodeMovAccMem(u8 opcode) {
+        u8 w = opcode & 1;
+        u16 addr {};
+
+        std::cout << "mov ";
+
+        if (w) {
+            if (pc + 2 > code.size()) return;
+            u8 addr_lo = code[pc + 1];
+            u8 addr_hi = code[pc + 2];
+            addr = (addr_hi << 8) | addr_lo;
+            pc += 2;
+        } else {
+            if (pc + 1> code.size()) return;
+            addr = code[pc + 1];
+            pc += 1;
+        }
+
+        if ((opcode >> 1) & 1) {
+            std::cout << "[" << (int)addr << "], ";
+            printRegister(0, w);
+        } else {
+            printRegister(0, w);
+            std::cout << ", [" << (int)addr << "]";
+        }
+
+        std::cout << '\n';
+
+        pc += 1;
+    }
+
+    void decodeImmToMem(u8 opcode) {
+        u8 w = opcode & 1;
+
+        if (pc + 1 > code.size()) return;
+
+        u8 modrm = code[pc + 1];
+        u8 mod = (modrm >> 6) & 3;
+        u8 reg = (modrm >> 3) & 7;
+        u8 rm = modrm & 7;
+
+        std::cout << "mov ";
+
+        printRM(mod, rm, w);
+
+        if (w) {
+            if (pc + 3 > code.size()) return;
+            u8 data_lo = code[pc + 2];
+            u8 data_hi = code[pc + 3];
+            u16 data = (data_hi << 8) | data_lo;
+            std::cout << ", word " << (int)data;
+            pc += 2;
+        } else {
+            if (pc + 2 > code.size()) return;
+            u8 data = code[pc + 2];
+            std::cout << ", byte " << (int)data;
+            pc += 1;
+        }
+
+        std::cout << '\n';
+
+        pc += 2;
     }
 
     void decodeImmToReg(u8 opcode) {
@@ -67,9 +139,9 @@ private:
         std::cout << ", ";
         if (w) {
             if (pc + 2 > code.size()) return;
-            u8 data_1 = code[pc + 1];
-            u8 data_2 = code[pc + 2];
-            u16 data = (data_2 << 8) | data_1;
+            u8 data_lo = code[pc + 1];
+            u8 data_hi = code[pc + 2];
+            u16 data = (data_hi << 8) | data_lo;
             std::cout << (int)data;
             pc += 2;
         } else {

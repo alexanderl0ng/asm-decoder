@@ -4,7 +4,10 @@ A basic 8086 instruction decoder that converts machine code back to assembly.
 
 ## Current Support
 
--   **MOV instruction**  - Register/memory to/from register, immediate to register
+-   **MOV instruction**     - Register/memory to/from register
+                            - Immediate to register
+                            - Immediate to memory
+                            - Memory/accumulator to accumulator/memory
 
 ## Building
 
