@@ -69,18 +69,14 @@ private:
         u8 w = opcode & 1;
         u16 addr {};
 
+        pc += 1;
+
         std::cout << "mov ";
 
         if (w) {
-            if (pc + 2 > code.size()) return;
-            u8 addr_lo = code[pc + 1];
-            u8 addr_hi = code[pc + 2];
-            addr = (addr_hi << 8) | addr_lo;
-            pc += 2;
+            addr = readU16();
         } else {
-            if (pc + 1 > code.size()) return;
-            addr = code[pc + 1];
-            pc += 1;
+            addr = readU8();
         }
 
         if ((opcode >> 1) & 1) {
@@ -92,46 +88,40 @@ private:
         }
 
         std::cout << '\n';
-
-        pc += 1;
     }
 
     void decodeImmToMem(u8 opcode) {
         u8 w = opcode & 1;
 
-        if (pc + 1 > code.size()) return;
+        if (!isIndexValid(1)) return;
 
         u8 modrm = code[pc + 1];
         u8 mod = (modrm >> 6) & 3;
         u8 reg = (modrm >> 3) & 7;
         u8 rm = modrm & 7;
 
+        pc += 2;
+
         std::cout << "mov ";
 
         printRM(mod, rm, w);
 
         if (w) {
-            if (pc + 3 > code.size()) return;
-            u8 data_lo = code[pc + 2];
-            u8 data_hi = code[pc + 3];
-            u16 data = (data_hi << 8) | data_lo;
-            std::cout << ", word " << (int)data;
-            pc += 2;
+            u16 data = readU16();
+            std::cout << ", word " << int(data);
         } else {
-            if (pc + 2 > code.size()) return;
-            u8 data = code[pc + 2];
-            std::cout << ", byte " << (int)data;
-            pc += 1;
+            u8 data = readU8();
+            std::cout << ", byte " << int(data);
         }
 
         std::cout << '\n';
-
-        pc += 2;
     }
 
     void decodeImmToReg(u8 opcode) {
         u8 w = (opcode >> 3) & 1;
         u8 reg = opcode & 7;
+
+        pc += 1;
 
         std::cout << "mov ";
 
@@ -139,34 +129,28 @@ private:
 
         std::cout << ", ";
         if (w) {
-            if (pc + 2 > code.size()) return;
-            u8 data_lo = code[pc + 1];
-            u8 data_hi = code[pc + 2];
-            u16 data = (data_hi << 8) | data_lo;
+            u16 data = readU16();
             std::cout << int(data);
-            pc += 2;
         } else {
-            if (pc + 1 > code.size()) return;
-            u8 data_lo = code[pc + 1];
+            u8 data_lo = readU8();
             std::cout << int(data_lo);
-            pc += 1;
         }
 
         std::cout << '\n';
-
-        pc += 1;
     }
 
     void decodeMovRegRem(u8 opcode) {
         u8 d = (opcode >> 1) & 1;
         u8 w = opcode & 1;
 
-        if (pc + 1 > code.size()) return;
+        if (!isIndexValid(1)) return;
 
         u8 modrm = code[pc + 1];
         u8 mod = (modrm >> 6) & 3;
         u8 reg = (modrm >> 3) & 7;
         u8 rm = modrm & 7;
+
+        pc += 2;
 
         std::cout << "mov ";
 
@@ -181,8 +165,6 @@ private:
         }
 
         std::cout << '\n';
-
-        pc += 2;
     }
 
     void printRegister(u8 reg, u8 w) const {
@@ -201,20 +183,15 @@ private:
         const char* addr[] = {"bx + si", "bx + di", "bp + si", "bp + di", "si", "di", "bp", "bx"};
 
         if (rm == 6 && mod == 0) {
-            if (pc + 3 > code.size()) return;
-            u8 disp_lo = code[pc + 2];
-            u8 disp_hi = code[pc + 3];
-            u16 disp = (disp_hi << 8) | disp_lo;
+            u16 disp = readU16();
             std::cout << '[' << int(disp) << ']';
-            pc += 2;
             return;
         }
 
         std::cout << "[" << addr[rm];
 
         if (mod == 1) {
-            if (pc + 2 > code.size()) return;
-            u8 disp_lo = code[pc + 2];
+            u8 disp_lo = readU8();
             i8 disp_signed = static_cast<i8>(disp_lo);
 
             if (disp_signed > 0) {
@@ -222,13 +199,8 @@ private:
             } else if (disp_signed < 0) {
                 std::cout << " - " << int(-disp_signed);
             }
-
-            pc += 1;
         } else if (mod == 2) {
-            if (pc + 3 > code.size()) return;
-            u8 disp_lo = code[pc + 2];
-            u8 disp_hi = code[pc + 3];
-            u16 disp = (disp_hi << 8) | disp_lo;
+            u16 disp = readU16();
             i16 disp_signed = static_cast<i16>(disp);
 
             if (disp_signed > 0) {
@@ -236,12 +208,26 @@ private:
             } else {
                 std::cout << " - " << int(-disp_signed);
             }
-
-            pc += 2;
         }
 
         std::cout << "]";
         return;
+    }
+
+    u8 readU8() {
+        if (!isIndexValid(1)) throw std::runtime_error("[ERROR] Cannot read u8.");
+        return code[pc++];
+    }
+
+    u16 readU16() {
+        if (!isIndexValid(2)) throw std::runtime_error("[ERROR] Cannot read u16.");
+        u16 value = (code[pc + 1] << 8) | code[pc];
+        pc += 2;
+        return value;
+    }
+
+    bool isIndexValid(std::size_t bytes) const {
+        return pc + bytes <= code.size();
     }
 
     static std::vector<u8> readBinaryFile(const std::string& filename) {
