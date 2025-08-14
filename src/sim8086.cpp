@@ -61,7 +61,7 @@ private:
                 t[i] = &InstructionDecoder::decodeCmpAccMem;
             }
 
-            for (i16 i = 0x80; i <= 0x8c; i++) {
+            for (i16 i = 0x80; i <= 0x83; i++) {
                 t[i] = &InstructionDecoder::decodeImmRegMem;
             }
 
@@ -166,13 +166,8 @@ private:
         u8 w = opcode & 1;
 
         pc += 1;
-        i16 data {};
 
-        if (w) {
-            data = static_cast<i16>(readU16());
-        } else {
-            data = static_cast<i8>(readU8());
-        }
+        i16 data = (w) ? static_cast<i16>(readU16()) : static_cast<i8>(readU8());
 
         std::cout << getRegister(0, w) << ", " << std::to_string(data) << '\n';
     }
@@ -192,15 +187,7 @@ private:
 
         const char* instr[] = {"add", "or", "adc", "sbb", "and", "sub", "xor", "cmp"};
 
-        std::string size = "";
-        if (mod != 3) {
-            if (w) {
-                size = " word";
-            } else {
-                size = " byte";
-            }
-        }
-
+        std::string size = (mod != 3) ? ((w) ? " word" : " byte") : "";
         std::string mem = getRM(mod, rm, w);
         u16 data = (w &&  !s) ? readU16() : readU8();
 
