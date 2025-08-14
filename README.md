@@ -9,6 +9,18 @@ A basic 8086 instruction decoder that converts machine code back to assembly.
                             - Immediate to memory
                             - Memory/accumulator to accumulator/memory
 
+-   **ADD instruction**     - Register/memory with register to either
+                            - Immediate to register/memory
+                            - Immediate to accumulator
+
+-   **SUB instruction**     - Register/memory and register to either
+                            - Immediate from register/memory
+                            - Immediate from accumulator
+
+-   **CMP instruction**     - Register/memory and register
+                            - Immediate with register/memory
+                            - Immediate with accumulator
+
 ## Building
 
 Run the build script:
