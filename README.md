@@ -21,9 +21,9 @@ A basic 8086 instruction decoder that converts machine code back to assembly.
                             - Immediate with register/memory
                             - Immediate with accumulator
 
--   **Conditional jumps**   - JE/JZ, JNE/JNZ, JL/JNGE, JLE/JNG, JG/JNLE, JGE/JNL
-                            - JB/JNAE, JBE/JNA, JA/JNBE, JAE/JNB
-                            - JS, JNS, JP/JPE, JNP/JPO, JO, JNO
+-   **Conditional jumps**   - JE/JZ, JNE/JNZ, JL/JNGE, JLE/JNG, JG/JNLE, JGE/JNL,
+                            JB/JNAE, JBE/JNA, JA/JNBE, JAE/JNB,
+                            JS, JNS, JP/JPE, JNP/JPO, JO, JNO
 
 -   **Loop instructions**   - LOOP, LOOPE/LOOPZ, LOOPNE/LOOPNZ, JCXZ/JECXZ
 
@@ -39,7 +39,7 @@ This creates the  `sim8086`  executable in the  `build/`  directory.
 
 Decode a binary file:
 ```bash
-./build/sim8086 data/test_0038
+./build/sim8086 example
 ```
 
 ## Round-trip Assembly
@@ -68,6 +68,3 @@ You can verify the decoder by round-tripping assembly code:
 
 If the decoder is working correctly, the files should be identical.
 
-## Test Data
-
-The  `data/`  directory contains sample assembly files and their assembled binaries for testing.
