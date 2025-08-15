@@ -21,6 +21,12 @@ A basic 8086 instruction decoder that converts machine code back to assembly.
                             - Immediate with register/memory
                             - Immediate with accumulator
 
+-   **Conditional jumps**   - JE/JZ, JNE/JNZ, JL/JNGE, JLE/JNG, JG/JNLE, JGE/JNL
+                            - JB/JNAE, JBE/JNA, JA/JNBE, JAE/JNB
+                            - JS, JNS, JP/JPE, JNP/JPO, JO, JNO
+
+-   **Loop instructions**   - LOOP, LOOPE/LOOPZ, LOOPNE/LOOPNZ, JCXZ/JECXZ
+
 ## Building
 
 Run the build script:

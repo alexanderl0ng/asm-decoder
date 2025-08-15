@@ -61,6 +61,10 @@ private:
                 t[i] = &InstructionDecoder::decodeCmpAccMem;
             }
 
+            for (i16 i = 0x70; i <= 0x7F; i++) {
+                t[i] = &InstructionDecoder::decodeConJmp;
+            }
+
             for (i16 i = 0x80; i <= 0x83; i++) {
                 t[i] = &InstructionDecoder::decodeImmRegMem;
             }
@@ -79,6 +83,10 @@ private:
 
             for (i16 i = 0xC6; i <= 0xC7; i++) {
                 t[i] = &InstructionDecoder::decodeMovImmToMem;
+            }
+
+            for (i16 i = 0xE0; i <= 0xE3; i++) {
+                t[i] = &InstructionDecoder::decodeLoop;
             }
 
             return t;
@@ -172,6 +180,17 @@ private:
         std::cout << getRegister(0, w) << ", " << std::to_string(data) << '\n';
     }
 
+    void decodeConJmp(u8 opcode) {
+        const char* jumpNames[] = {
+            "jo", "jno", "jb", "jnb", "je", "jne", "jbe", "jnbe",
+            "js", "jns", "jp", "jnp", "jl", "jnl", "jle", "jnle"
+        };
+
+        pc++;
+        i8 disp = static_cast<i8>(readU8());
+        std::cout << jumpNames[opcode - 0x70] << ((disp >= 0) ? " $+ " : " $- ") << ((disp >= 0) ? disp + 2 : -(disp + 2)) << '\n';
+    }
+
     void decodeImmRegMem(u8 opcode) {
         u8 w = opcode & 1;
         u8 s = (opcode >> 1) & 1;
@@ -234,6 +253,14 @@ private:
         } else {
             std::cout << getRM(mod, rm, w) << ", byte " << std::to_string(readU8()) << '\n';
         }
+    }
+
+    void decodeLoop(u8 opcode) {
+        const char* loopNames[] = {"loopne", "loope", "loop", "jcxz"};
+
+        pc++;
+        i8 disp = static_cast<i8>(readU8());
+        std::cout << loopNames[opcode - 0xE0] << ((disp >= 0) ? " $+ " : " $- ") << ((disp >= 0) ? disp + 2 : -(disp + 2)) << '\n';
     }
 
     std::string getRegister(u8 reg, u8 w) const {
