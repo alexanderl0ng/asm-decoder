@@ -45,6 +45,14 @@ private:
                 t[i] = &InstructionDecoder::decodeAddAccMem;
             }
 
+            for (i16 i = 0x08; i <= 0x0B; i++) {
+                t[i] = &InstructionDecoder::decodeOrRegRem;
+            }
+
+            for (i16 i = 0x0C; i <= 0x0D; i++) {
+                t[i] = &InstructionDecoder::decodeOrAccMem;
+            }
+
             for (i16 i = 0x28; i <= 0x2B; i++) {
                 t[i] = &InstructionDecoder::decodeSubRegRem;
             }
@@ -53,12 +61,28 @@ private:
                 t[i] = &InstructionDecoder::decodeSubAccMem;
             }
 
+            for (i16 i = 0x30; i <= 0x33; i++) {
+                t[i] = &InstructionDecoder::decodeXorRegRem;
+            }
+
+            for (i16 i = 0x34; i <= 0x35; i++) {
+                t[i] = &InstructionDecoder::decodeXorAccMem;
+            }
+
             for (i16 i = 0x38; i <= 0x3B; i++) {
                 t[i] = &InstructionDecoder::decodeCmpRegRem;
             }
 
             for (i16 i = 0x3C; i <= 0x3D; i++) {
                 t[i] = &InstructionDecoder::decodeCmpAccMem;
+            }
+
+            for (i16 i = 0x40; i <= 0x4F; i++) {
+                t[i] = &InstructionDecoder::decodeIncDec;
+            }
+
+            for (i16 i = 0x50; i <= 0x5F; i++) {
+                t[i] = &InstructionDecoder::decodePushPop;
             }
 
             for (i16 i = 0x70; i <= 0x7F; i++) {
@@ -99,6 +123,16 @@ private:
         std::cout << "[WARNING] Unknown opcode " << std::format("0x{:02x}", int(opcode))
             << " at position " << std::dec << pc << '\n';
         pc++;
+    }
+
+    void decodeOrRegRem(u8 opcode) {
+        std::cout << "or ";
+        decodeRegRem(opcode);
+    }
+
+    void decodeXorRegRem(u8 opcode) {
+        std::cout << "xor ";
+        decodeRegRem(opcode);
     }
 
     void decodeMovRegRem(u8 opcode) {
@@ -144,7 +178,7 @@ private:
     void decodeMovAccMem(u8 opcode) {
         u8 w = opcode & 1;
 
-        pc += 1;
+        pc++;
 
         u16 addr = (w) ? readU16() : readU8();
 
@@ -153,6 +187,16 @@ private:
         } else {
             std::cout << "mov " << getRegister(0, w) << ", [" << std::to_string(addr) << "]" << '\n';
         }
+    }
+
+    void decodeOrAccMem(u8 opcode) {
+        std::cout << "or ";
+        decodeAccMem(opcode);
+    }
+
+    void decodeXorAccMem(u8 opcode) {
+        std::cout <<"xor ";
+        decodeAccMem(opcode);
     }
 
     void decodeAddAccMem(u8 opcode) {
@@ -173,11 +217,25 @@ private:
     void decodeAccMem(u8 opcode) {
         u8 w = opcode & 1;
 
-        pc += 1;
+        pc++;
 
         i16 data = (w) ? static_cast<i16>(readU16()) : static_cast<i8>(readU8());
 
         std::cout << getRegister(0, w) << ", " << std::to_string(data) << '\n';
+    }
+
+    void decodeIncDec(u8 opcode) {
+        u8 is_dec = (opcode >> 3) & 1;
+        u8 reg = opcode & 7;
+
+        std::cout << ((is_dec) ? "dec " : "inc ") << getRegister(reg, 1) << '\n';
+    }
+
+    void decodePushPop(u8 opcode) {
+        u8 is_pop = (opcode >> 3) & 1;
+        u8 reg = opcode & 7;
+
+        std::cout << ((is_pop) ? "pop " : "push ") << getRegister(reg, 1) << '\n';
     }
 
     void decodeConJmp(u8 opcode) {
@@ -225,9 +283,9 @@ private:
         pc += 1;
 
         if (w) {
-            std::cout << getRegister(reg, w) << ", " << std::to_string(readU16()) << '\n';
+            std::cout << getRegister(reg, w) << ", " << std::to_string(static_cast<i16>(readU16())) << '\n';
         } else {
-            std::cout << getRegister(reg, w) << ", " << std::to_string(readU8()) << '\n';
+            std::cout << getRegister(reg, w) << ", " << std::to_string(static_cast<i8>(readU8())) << '\n';
         }
     }
 

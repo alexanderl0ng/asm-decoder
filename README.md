@@ -27,6 +27,19 @@ A basic 8086 instruction decoder that converts machine code back to assembly.
 
 -   **Loop instructions**   - LOOP, LOOPE/LOOPZ, LOOPNE/LOOPNZ, JCXZ/JECXZ
 
+-   **Or instructions**
+
+-   **Xor instructions**
+
+-   **Inc instructions**
+
+-   **Dec instructions**
+
+-   **Push instructions**
+
+-   **Pop instructions**
+
+Note some functionalities are missing for some of the supported instructions.
 ## Building
 
 Run the build script:
