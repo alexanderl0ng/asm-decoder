@@ -28,7 +28,7 @@ fi
 
 mkdir -p build
 
-$COMPILER $FLAGS -std=c++20 -o build/sim8086 src/sim8086.cpp
+$COMPILER $FLAGS -std=c++20 -Wall -Werror -o build/sim8086 src/sim8086.cpp
 
 if [ $? -eq 0 ]; then
     echo "[SUCCESS] Compilation successful! Executable created in: build/main"

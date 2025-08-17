@@ -4,42 +4,28 @@ A basic 8086 instruction decoder that converts machine code back to assembly.
 
 ## Current Support
 
--   **MOV instruction**     - Register/memory to/from register
-                            - Immediate to register
-                            - Immediate to memory
-                            - Memory/accumulator to accumulator/memory
+- **Arithmetic Operations** - ADD, SUB, ADC, SBB, INC, DEC, CMP, NEG
 
--   **ADD instruction**     - Register/memory with register to either
-                            - Immediate to register/memory
-                            - Immediate to accumulator
+- **Logical Operations**    - AND, OR, XOR, NOT, TEST
 
--   **SUB instruction**     - Register/memory and register to either
-                            - Immediate from register/memory
-                            - Immediate from accumulator
+- **Data Movement**         - MOV (all variants), XCHG
 
--   **CMP instruction**     - Register/memory and register
-                            - Immediate with register/memory
-                            - Immediate with accumulator
+- **Stack Operations**      - PUSH, POP (registers and segment registers), PUSHF, POPF
 
--   **Conditional jumps**   - JE/JZ, JNE/JNZ, JL/JNGE, JLE/JNG, JG/JNLE, JGE/JNL,
-                            JB/JNAE, JBE/JNA, JA/JNBE, JAE/JNB,
-                            JS, JNS, JP/JPE, JNP/JPO, JO, JNO
+- **Control Flow**          - All conditional jumps (JE, JNE, JL, JG, JB, JA, etc.)
 
--   **Loop instructions**   - LOOP, LOOPE/LOOPZ, LOOPNE/LOOPNZ, JCXZ/JECXZ
+- **Loop Instructions**     - LOOP, LOOPE, LOOPNE, JCXZ
 
--   **Or instructions**
+- **Arithmetic Group**      - MUL, IMUL, DIV, IDIV
 
--   **Xor instructions**
+- **Flag Operations**       - CLC, STC, CLI, STI, CLD, STD, CMC, SAHF, LAHF
 
--   **Inc instructions**
+- **System Instructions**   - NOP, HLT, WAIT
 
--   **Dec instructions**
+- **Interrupt Instructions**- INT, INT3, INTO, IRET
 
--   **Push instructions**
+- **Special Instructions**  - AAS (ASCII adjust), LOCK prefix, REP/REPNE prefixes
 
--   **Pop instructions**
-
-Note some functionalities are missing for some of the supported instructions.
 ## Building
 
 Run the build script:
