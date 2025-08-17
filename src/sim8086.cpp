@@ -181,6 +181,10 @@ private:
                 t[i] = &InstructionDecoder::decodeFlagOps;
             }
 
+
+            t[0x27] = &InstructionDecoder::decodeDaa;
+            t[0x2F] = &InstructionDecoder::decodeDas;
+            t[0x37] = &InstructionDecoder::decodeAaa;
             t[0x3F] = &InstructionDecoder::decodeAas;
             t[0x8C] = &InstructionDecoder::decodeRegSegReg;
             t[0x8E] = &InstructionDecoder::decodeRegSegReg;
@@ -521,6 +525,13 @@ private:
         std::cout << flagOps[opcode - 0xF8] << '\n';
         pc++;
     }
+
+
+    void decodeDaa(u8 opcode) { std::cout << "daa" << '\n'; pc++; }
+
+    void decodeDas(u8 opcode) { std::cout << "das" << '\n'; pc++; }
+
+    void decodeAaa(u8 opcode) { std::cout << "aaa" << '\n'; pc++; }
 
     void decodeAas(u8 opcode) { std::cout << "aas" << '\n'; pc++; }
 
