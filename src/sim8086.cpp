@@ -161,12 +161,16 @@ private:
                 t[i] = &InstructionDecoder::decodeMovImmToMem;
             }
 
-            for (u8 i = 0xCC; i <= 0xCE; i++) {
+            for (u8 i = 0xCC; i <= 0xCF; i++) {
                 t[i] = &InstructionDecoder::decodeInt;
             }
 
             for (u8 i = 0xE0; i <= 0xE3; i++) {
                 t[i] = &InstructionDecoder::decodeLoop;
+            }
+
+            for (u8 i = 0xE4; i <= 0xE7; i++) {
+                t[i] = &InstructionDecoder::decodeInOut;
             }
 
             for (u8 i = 0xF2; i <= 0xF3; i++) {
@@ -432,6 +436,15 @@ private:
         u16 data = (w && !s) ? readU16() : readU8();
 
         std::cout << instr[reg] << size << " " << mem << ", " << std::to_string(data) << '\n';
+    }
+
+    void decodeInOut(u8 opcode) {
+        u8 is_out = (opcode >> 2) & 1;
+        u8 w = opcode & 1;
+
+        pc++;
+
+        std::cout << ((is_out) ? "out " : "in ") << getRegister(0, w) << ", " << std::to_string(readU8()) << '\n';
     }
 
     void decodeTestGroupImmRegMem(u8 opcode) {

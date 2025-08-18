@@ -24,6 +24,8 @@ A basic 8086 instruction decoder that converts machine code back to assembly.
 
 - **Interrupt Instructions**- INT, INT3, INTO, IRET
 
+- **I/O Operations**        - IN, OUT
+
 - **Special Instructions**  - DAA, DAS, AAA, AAS (ASCII/BCD adjust), LOCK prefix, REP/REPNE prefixes
 
 ## Building
