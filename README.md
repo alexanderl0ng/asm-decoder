@@ -4,29 +4,31 @@ A basic 8086 instruction decoder that converts machine code back to assembly.
 
 ## Current Support
 
-- **Arithmetic Operations** - ADD, SUB, ADC, SBB, INC, DEC, CMP, NEG
+- **Arithmetic Operations**     - ADD, SUB, ADC, SBB, INC, DEC, CMP, NEG, MUL, IMUL, DIV, IDIV
 
-- **Logical Operations**    - AND, OR, XOR, NOT, TEST
+- **Logical Operations**        - AND, OR, XOR, NOT, TEST
 
-- **Data Movement**         - MOV (all variants), XCHG
+- **Shift/Rotate Operations**   - ROL, ROR, RCL, RCR, SAL, SHR, SAR
 
-- **Stack Operations**      - PUSH, POP (registers and segment registers), PUSHF, POPF
+- **Data Movement**             - MOV (all variants including segment registers), XCHG
 
-- **Control Flow**          - All conditional jumps (JE, JNE, JL, JG, JB, JA, etc.)
+- **Stack Operations**          - PUSH, POP (registers and segment registers), PUSHF, POPF
 
-- **Loop Instructions**     - LOOP, LOOPE, LOOPNE, JCXZ
+- **Control Flow**              - All conditional jumps (JO, JNO, JB, JNB, JE, JNE, JBE, JNBE, JS, JNS, JP, JNP, JL, JNL, JLE, JNLE)
 
-- **Arithmetic Group**      - MUL, IMUL, DIV, IDIV
+- **Loop Instructions**         - LOOP, LOOPE, LOOPNE, JCXZ
 
-- **Flag Operations**       - CLC, STC, CLI, STI, CLD, STD, CMC, SAHF, LAHF
+- **Arithmetic Group**          - MUL, IMUL, DIV, IDIV
 
-- **System Instructions**   - NOP, HLT, WAIT
+- **Flag Operations**           - CLC, STC, CLI, STI, CLD, STD, CMC, SAHF, LAHF
 
-- **Interrupt Instructions**- INT, INT3, INTO, IRET
+- **System Instructions**       - HLT, WAIT, CBW, CWD
 
-- **I/O Operations**        - IN, OUT
+- **Interrupt Instructions**    - INT, INT3, INTO, IRET
 
-- **Special Instructions**  - DAA, DAS, AAA, AAS (ASCII/BCD adjust), LOCK prefix, REP/REPNE prefixes
+- **I/O Operations**            - IN, OUT
+
+- **Special Instructions**      - DAA, DAS, AAA, AAS (ASCII/BCD adjust), LOCK prefix, REP/REPNE prefixes
 
 ## Building
 

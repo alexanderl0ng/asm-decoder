@@ -24,7 +24,7 @@ public:
             u8 opcode = code[pc];
             auto& table = getOpcodeTable();
             auto handler = table[opcode];
-            (this->*handler)(opcode);
+            (this->*handler.handler)(opcode, handler.mnemonic);
         }
     }
 
@@ -32,175 +32,204 @@ private:
     std::vector<u8> code;
     std::size_t pc = 0;
 
-    static std::array<void(InstructionDecoder::*)(u8), 256>& getOpcodeTable() {
-        static std::array<void(InstructionDecoder::*)(u8), 256> table = []() {
-            std::array<void(InstructionDecoder::*)(u8), 256> t;
-            t.fill(&InstructionDecoder::unknownOpcode);
+    struct OpcodeEntry {
+        void(InstructionDecoder::*handler)(u8, std::string);
+        std::string mnemonic;
+    };
+
+    static std::array<OpcodeEntry, 256>& getOpcodeTable() {
+        static std::array<OpcodeEntry, 256> table = []() {
+            std::array<OpcodeEntry, 256> t;
+            t.fill({&InstructionDecoder::unknownOpcode, ""});
 
             for (u8 i = 0x00; i <= 0x03; i++) {
-                t[i] = &InstructionDecoder::decodeAddRegMem;
+                t[i] = {&InstructionDecoder::decodeRegMem, "add"};
             }
 
             for (u8 i = 0x04; i <= 0x05; i++) {
-                t[i] = &InstructionDecoder::decodeAddAccMem;
+                t[i] = {&InstructionDecoder::decodeAccMem, "add"};
             }
 
             for (u8 i = 0x06; i <= 0x07; i++) {
-                t[i] = &InstructionDecoder::decodeSegRegPushPop;
+                t[i] = {&InstructionDecoder::decodeSegRegPushPop, ""};
             }
 
             for (u8 i = 0x08; i <= 0x0B; i++) {
-                t[i] = &InstructionDecoder::decodeOrRegMem;
+                t[i] = {&InstructionDecoder::decodeRegMem, "or"};
             }
 
             for (u8 i = 0x0C; i <= 0x0D; i++) {
-                t[i] = &InstructionDecoder::decodeOrAccMem;
+                t[i] = {&InstructionDecoder::decodeAccMem, "or"};
             }
 
             for (u8 i = 0x0E; i <= 0x0F; i++) {
-                t[i] = &InstructionDecoder::decodeSegRegPushPop;
+                t[i] = {&InstructionDecoder::decodeSegRegPushPop, ""};
             }
 
             for (u8 i = 0x10; i <= 0x13; i++) {
-                t[i] = &InstructionDecoder::decodeAdcRegMem;
+                t[i] = {&InstructionDecoder::decodeRegMem, "adc"};
             }
 
             for (u8 i = 0x14; i <= 0x15; i++) {
-                t[i] = &InstructionDecoder::decodeAdcAccMem;
+                t[i] = {&InstructionDecoder::decodeAccMem, "adc"};
             }
 
             for (u8 i = 0x16; i <= 0x17; i++) {
-                t[i] = &InstructionDecoder::decodeSegRegPushPop;
+                t[i] = {&InstructionDecoder::decodeSegRegPushPop, ""};
             }
 
             for (u8 i = 0x18; i <= 0x1B; i++) {
-                t[i] = &InstructionDecoder::decodeSbbRegMem;
+                t[i] = {&InstructionDecoder::decodeRegMem, "sbb"};
             }
 
             for (u8 i = 0x1C; i <= 0x1D; i++) {
-                t[i] = &InstructionDecoder::decodeSbbAccMem;
+                t[i] = {&InstructionDecoder::decodeAccMem, "sbb"};
             }
 
             for (u8 i = 0x1E; i <= 0x1F; i++) {
-                t[i] = &InstructionDecoder::decodeSegRegPushPop;
+                t[i] = {&InstructionDecoder::decodeSegRegPushPop, ""};
             }
 
             for (u8 i = 0x20; i <= 0x23; i++) {
-                t[i] = &InstructionDecoder::decodeAndRegMem;
+                t[i] = {&InstructionDecoder::decodeRegMem, "and"};
             }
 
             for (u8 i = 0x24; i <= 0x25; i++) {
-                t[i] = &InstructionDecoder::decodeAndAccMem;
+                t[i] = {&InstructionDecoder::decodeAccMem, "and"};
             }
 
             for (u8 i = 0x28; i <= 0x2B; i++) {
-                t[i] = &InstructionDecoder::decodeSubRegMem;
+                t[i] = {&InstructionDecoder::decodeRegMem, "sub"};
             }
 
             for (u8 i = 0x2C; i <= 0x2D; i++) {
-                t[i] = &InstructionDecoder::decodeSubAccMem;
+                t[i] = {&InstructionDecoder::decodeAccMem, "sub"};
             }
 
             for (u8 i = 0x30; i <= 0x33; i++) {
-                t[i] = &InstructionDecoder::decodeXorRegMem;
+                t[i] = {&InstructionDecoder::decodeRegMem, "xor"};
             }
 
             for (u8 i = 0x34; i <= 0x35; i++) {
-                t[i] = &InstructionDecoder::decodeXorAccMem;
+                t[i] = {&InstructionDecoder::decodeAccMem, "xor"};
             }
 
             for (u8 i = 0x38; i <= 0x3B; i++) {
-                t[i] = &InstructionDecoder::decodeCmpRegMem;
+                t[i] = {&InstructionDecoder::decodeRegMem, "cmp"};
             }
 
             for (u8 i = 0x3C; i <= 0x3D; i++) {
-                t[i] = &InstructionDecoder::decodeCmpAccMem;
+                t[i] = {&InstructionDecoder::decodeAccMem, "cmp"};
             }
 
             for (u8 i = 0x40; i <= 0x4F; i++) {
-                t[i] = &InstructionDecoder::decodeIncDec;
+                t[i] = {&InstructionDecoder::decodeIncDec, ""};
             }
 
             for (u8 i = 0x50; i <= 0x5F; i++) {
-                t[i] = &InstructionDecoder::decodePushPop;
+                t[i] = {&InstructionDecoder::decodePushPop, ""};
             }
 
             for (u8 i = 0x70; i <= 0x7F; i++) {
-                t[i] = &InstructionDecoder::decodeConJmp;
+                t[i] = {&InstructionDecoder::decodeConJmp, ""};
             }
 
             for (u8 i = 0x80; i <= 0x83; i++) {
-                t[i] = &InstructionDecoder::decodeImmRegMem;
+                t[i] = {&InstructionDecoder::decodeImmRegMem, ""};
             }
 
             for (u8 i = 0x84; i <= 0x85; i++) {
-                t[i] = &InstructionDecoder::decodeTestRegMem;
+                t[i] = {&InstructionDecoder::decodeRegMem, "test"};
             }
 
             for (u8 i = 0x86; i <= 0x87; i++) {
-                t[i] = &InstructionDecoder::decodeXchgRegMem;
+                t[i] = {&InstructionDecoder::decodeXchgRegMem, "xchg"};
             }
 
             for (u8 i = 0x88; i <= 0x8B; i++) {
-                t[i] = &InstructionDecoder::decodeMovRegMem;
+                t[i] = {&InstructionDecoder::decodeRegMem, "mov"};
+            }
+
+            for (u8 i = 0x90; i <= 0x97; i++) {
+                t[i] = {&InstructionDecoder::decodeXchgAccMem, "xchg"};
             }
 
             for (u8 i = 0xA0; i <= 0xA3; i++) {
-                t[i] = &InstructionDecoder::decodeMovAccMem;
+                t[i] = {&InstructionDecoder::decodeMovAccMem, "mov"};
             }
 
             for (u8 i = 0xA8; i <= 0xA9; i++) {
-                t[i] = &InstructionDecoder::decodeTestAccMem;
+                t[i] = {&InstructionDecoder::decodeAccMem, "test"};
             }
 
             for (u8 i = 0xB0; i <= 0xBF; i++) {
-                t[i] = &InstructionDecoder::decodeMovImmToReg;
+                t[i] = {&InstructionDecoder::decodeImmToReg, "mov"};
             }
 
             for (u8 i = 0xC6; i <= 0xC7; i++) {
-                t[i] = &InstructionDecoder::decodeMovImmToMem;
+                t[i] = {&InstructionDecoder::decodeImmToMem, "mov"};
             }
 
             for (u8 i = 0xCC; i <= 0xCF; i++) {
-                t[i] = &InstructionDecoder::decodeInt;
+                t[i] = {&InstructionDecoder::decodeInt, ""};
+            }
+
+            for (u8 i = 0xD0; i <= 0xD3; i++) {
+                t[i] = {&InstructionDecoder::decodeShtRot, ""};
             }
 
             for (u8 i = 0xE0; i <= 0xE3; i++) {
-                t[i] = &InstructionDecoder::decodeLoop;
+                t[i] = {&InstructionDecoder::decodeLoop, ""};
             }
 
             for (u8 i = 0xE4; i <= 0xE7; i++) {
-                t[i] = &InstructionDecoder::decodeInOut;
+                t[i] = {&InstructionDecoder::decodeInOut, ""};
+            }
+
+            for (u8 i = 0xEC; i <= 0xEF; i++) {
+                t[i] = {&InstructionDecoder::decodeInOut, ""};
             }
 
             for (u8 i = 0xF2; i <= 0xF3; i++) {
-                t[i] = &InstructionDecoder::decodeRepPrefix;
+                t[i] = {&InstructionDecoder::decodeRepPrefix, ""};
             }
 
             for (u8 i = 0xF6; i <= 0xF7; i++) {
-                t[i] = &InstructionDecoder::decodeTestGroupImmRegMem;
+                t[i] = {&InstructionDecoder::decodeGrp3, ""};
             }
 
             for (u8 i = 0xF8; i <= 0xFD; i++) {
-                t[i] = &InstructionDecoder::decodeFlagOps;
+                t[i] = {&InstructionDecoder::decodeFlagOps, ""};
             }
 
-
-            t[0x27] = &InstructionDecoder::decodeDaa;
-            t[0x2F] = &InstructionDecoder::decodeDas;
-            t[0x37] = &InstructionDecoder::decodeAaa;
-            t[0x3F] = &InstructionDecoder::decodeAas;
-            t[0x8C] = &InstructionDecoder::decodeRegSegReg;
-            t[0x8E] = &InstructionDecoder::decodeRegSegReg;
-            t[0x90] = &InstructionDecoder::decodeNop;
-            t[0x9B] = &InstructionDecoder::decodeWait;
-            t[0x9C] = &InstructionDecoder::decodePushf;
-            t[0x9D] = &InstructionDecoder::decodePopf;
-            t[0x9E] = &InstructionDecoder::decodeSahf;
-            t[0x9F] = &InstructionDecoder::decodeLahf;
-            t[0xF0] = &InstructionDecoder::decodeLock;
-            t[0xF4] = &InstructionDecoder::decodeHlt;
-            t[0xF5] = &InstructionDecoder::decodeCmc;
+            // t[0x26] = {&InstructionDecoder::decodeSegmentPrefix, "es:"};
+            t[0x27] = {&InstructionDecoder::decodeNullaryInstruction, "daa"};
+            // t[0x2E] = {&InstructionDecoder::decodeSegmentPrefix, "cs:"};
+            t[0x2F] = {&InstructionDecoder::decodeNullaryInstruction, "das"};
+            // t[0x36] = {&InstructionDecoder::decodeSegmentPrefix, "ss:"};
+            t[0x37] = {&InstructionDecoder::decodeNullaryInstruction, "aaa"};
+            // t[0x3E] = {&InstructionDecoder::decodeSegmentPrefix, "ds:"};
+            t[0x3F] = {&InstructionDecoder::decodeNullaryInstruction, "aas"};
+            t[0x8C] = {&InstructionDecoder::decodeRegSegReg, "mov"};
+            t[0x8E] = {&InstructionDecoder::decodeRegSegReg, "mov"};
+            t[0x98] = {&InstructionDecoder::decodeNullaryInstruction, "cbw"};
+            t[0x99] = {&InstructionDecoder::decodeNullaryInstruction, "cwd"};
+            t[0x9B] = {&InstructionDecoder::decodeNullaryInstruction, "wait"};
+            t[0x9C] = {&InstructionDecoder::decodeNullaryInstruction, "pushf"};
+            t[0x9D] = {&InstructionDecoder::decodeNullaryInstruction, "popf"};
+            t[0x9E] = {&InstructionDecoder::decodeNullaryInstruction, "sahf"};
+            t[0x9F] = {&InstructionDecoder::decodeNullaryInstruction, "lahf"};
+            t[0xF0] = {&InstructionDecoder::decodeNullaryPrefix, "lock"};
+            t[0xF4] = {&InstructionDecoder::decodeNullaryInstruction, "hlt"};
+            t[0xF5] = {&InstructionDecoder::decodeNullaryInstruction, "cmc"};
+            t[0xF8] = {&InstructionDecoder::decodeNullaryInstruction, "clc"};
+            t[0xF9] = {&InstructionDecoder::decodeNullaryInstruction, "stc"};
+            t[0xFA] = {&InstructionDecoder::decodeNullaryInstruction, "cli"};
+            t[0xFB] = {&InstructionDecoder::decodeNullaryInstruction, "sti"};
+            t[0xFC] = {&InstructionDecoder::decodeNullaryInstruction, "cld"};
+            t[0xFD] = {&InstructionDecoder::decodeNullaryInstruction, "std"};
+            t[0xFE] = {&InstructionDecoder::decodeGrp5, ""};
+            t[0xFF] = {&InstructionDecoder::decodeGrp5, ""};
 
             return t;
         }();
@@ -208,68 +237,28 @@ private:
         return table;
     }
 
-    void unknownOpcode(u8 opcode) {
+    void unknownOpcode(u8 opcode, std::string mnemonic) {
         std::cout << "[WARNING] Unknown opcode " << std::format("0x{:02x}", int(opcode))
             << " at position " << std::dec << pc << '\n';
         pc++;
     }
 
-    void decodeAddRegMem(u8 opcode) {
-        std::cout << "add ";
-        decodeRegMem(opcode);
+    void decodeXchgRegMem(u8 opcode, std::string mnemonic) {
+        u8 w = opcode & 1;
+
+        if (!isIndexValid(1)) return;
+
+        u8 modrm = code[pc + 1];
+        u8 mod = (modrm >> 6) & 3;
+        u8 reg = (modrm >> 3) & 7;
+        u8 rm = modrm & 7;
+
+        pc += 2;
+
+        std::cout << mnemonic << " " << getRM(mod, rm, w) << ", " << getRegister(reg, w) << '\n';
     }
 
-    void decodeOrRegMem(u8 opcode) {
-        std::cout << "or ";
-        decodeRegMem(opcode);
-    }
-
-    void decodeAdcRegMem(u8 opcode) {
-        std::cout << "adc ";
-        decodeRegMem(opcode);
-    }
-
-    void decodeSbbRegMem(u8 opcode) {
-        std::cout << "sbb ";
-        decodeRegMem(opcode);
-    }
-
-    void decodeAndRegMem(u8 opcode) {
-        std::cout << "and ";
-        decodeRegMem(opcode);
-    }
-
-    void decodeSubRegMem(u8 opcode) {
-        std::cout << "sub ";
-        decodeRegMem(opcode);
-    }
-
-    void decodeCmpRegMem(u8 opcode) {
-        std::cout << "cmp ";
-        decodeRegMem(opcode);
-    }
-
-    void decodeXorRegMem(u8 opcode) {
-        std::cout << "xor ";
-        decodeRegMem(opcode);
-    }
-
-    void decodeTestRegMem(u8 opcode) {
-        std::cout << "test ";
-        decodeRegMem(opcode);
-    }
-
-    void decodeXchgRegMem(u8 opcode) {
-        std::cout << "xchg ";
-        decodeRegMem(opcode);
-    }
-
-    void decodeMovRegMem(u8 opcode) {
-        std::cout << "mov ";
-        decodeRegMem(opcode);
-    }
-
-    void decodeRegMem(u8 opcode) {
+    void decodeRegMem(u8 opcode, std::string mnemonic) {
         u8 d = (opcode >> 1) & 1;
         u8 w = opcode & 1;
 
@@ -283,13 +272,13 @@ private:
         pc += 2;
 
         if (d) {
-            std::cout << getRegister(reg, w) << ", " << getRM(mod, rm, w) << '\n';
+            std::cout << mnemonic << " " << getRegister(reg, w) << ", " << getRM(mod, rm, w) << '\n';
         } else {
-            std::cout << getRM(mod, rm, w) << ", " << getRegister(reg, w) << '\n';
+            std::cout << mnemonic << " " << getRM(mod, rm, w) << ", " << getRegister(reg, w) << '\n';
         }
     }
 
-    void decodeRegSegReg(u8 opcode) {
+    void decodeRegSegReg(u8 opcode, std::string mnemonic) {
         u8 is_to_segReg = (opcode >> 1) & 1;
 
         if (!isIndexValid(1)) return;
@@ -302,13 +291,13 @@ private:
         pc += 2;
 
         if (is_to_segReg) {
-            std::cout << "mov " << getsegReg(sr) << ", " << getRM(mod, rm, 1) << '\n';
+            std::cout << mnemonic << " " << getSegReg(sr) << ", " << getRM(mod, rm, 1) << '\n';
         } else {
-            std::cout << "mov " << getRM(mod, rm, 1) << ", " << getsegReg(sr) << '\n';
+            std::cout << mnemonic << " " << getRM(mod, rm, 1) << ", " << getSegReg(sr) << '\n';
         }
     }
 
-    void decodeMovAccMem(u8 opcode) {
+    void decodeMovAccMem(u8 opcode, std::string mnemonic) {
         u8 w = opcode & 1;
 
         pc++;
@@ -316,68 +305,31 @@ private:
         u16 addr = (w) ? readU16() : readU8();
 
         if ((opcode >> 1) & 1) {
-            std::cout << "mov [" << std::to_string(addr) << "], " << getRegister(0, w) << '\n';
+            std::cout << mnemonic << " [" << std::to_string(addr) << "], " << getRegister(0, w) << '\n';
         } else {
-            std::cout << "mov " << getRegister(0, w) << ", [" << std::to_string(addr) << "]" << '\n';
+            std::cout << mnemonic << " " << getRegister(0, w) << ", [" << std::to_string(addr) << "]" << '\n';
         }
     }
 
-    void decodeAddAccMem(u8 opcode) {
-        std::cout << "add ";
-        decodeAccMem(opcode);
+    void decodeXchgAccMem(u8 opcode, std::string mnemonic) {
+        u8 reg = opcode & 7;
+
+        pc++;
+
+        std::cout << mnemonic << " ax, " << getRegister(reg, 1) << '\n';
     }
 
-    void decodeOrAccMem(u8 opcode) {
-        std::cout << "or ";
-        decodeAccMem(opcode);
-    }
-
-    void decodeAdcAccMem(u8 opcode) {
-        std::cout << "adc ";
-        decodeAccMem(opcode);
-    }
-
-    void decodeSbbAccMem(u8 opcode) {
-        std::cout << "sbb ";
-        decodeAccMem(opcode);
-    }
-
-    void decodeAndAccMem(u8 opcode) {
-        std::cout << "and ";
-        decodeAccMem(opcode);
-    }
-
-    void decodeSubAccMem(u8 opcode) {
-        std::cout << "sub ";
-        decodeAccMem(opcode);
-    }
-
-    void decodeCmpAccMem(u8 opcode) {
-        std::cout << "cmp ";
-        decodeAccMem(opcode);
-    }
-
-    void decodeXorAccMem(u8 opcode) {
-        std::cout << "xor ";
-        decodeAccMem(opcode);
-    }
-
-    void decodeTestAccMem(u8 opcode) {
-        std::cout << "test ";
-        decodeAccMem(opcode);
-    }
-
-    void decodeAccMem(u8 opcode) {
+    void decodeAccMem(u8 opcode, std::string mnemonic) {
         u8 w = opcode & 1;
 
         pc++;
 
         i16 data = (w) ? static_cast<i16>(readU16()) : static_cast<i8>(readU8());
 
-        std::cout << getRegister(0, w) << ", " << std::to_string(data) << '\n';
+        std::cout << mnemonic << " " << getRegister(0, w) << ", " << std::to_string(data) << '\n';
     }
 
-    void decodeIncDec(u8 opcode) {
+    void decodeIncDec(u8 opcode, std::string mnemonic) {
         u8 is_dec = (opcode >> 3) & 1;
         u8 reg = opcode & 7;
 
@@ -386,17 +338,17 @@ private:
         std::cout << ((is_dec) ? "dec " : "inc ") << getRegister(reg, 1) << '\n';
     }
 
-    void decodeSegRegPushPop (u8 opcode) {
+    void decodeSegRegPushPop (u8 opcode, std::string mnemonic) {
         u8 is_pop = opcode & 1;
         u8 sr = (opcode >> 3) & 3;
 
         pc++;
 
-        std::cout << ((is_pop) ? "pop " : "push ") << getsegReg(sr) << '\n';
+        std::cout << ((is_pop) ? "pop " : "push ") << getSegReg(sr) << '\n';
     }
 
 
-    void decodePushPop(u8 opcode) {
+    void decodePushPop(u8 opcode, std::string mnemonic) {
         u8 is_pop = (opcode >> 3) & 1;
         u8 reg = opcode & 7;
 
@@ -405,7 +357,7 @@ private:
         std::cout << ((is_pop) ? "pop " : "push ") << getRegister(reg, 1) << '\n';
     }
 
-    void decodeConJmp(u8 opcode) {
+    void decodeConJmp(u8 opcode, std::string mnemonic) {
         const char* jumpNames[] = {
             "jo", "jno", "jb", "jnb", "je", "jne", "jbe", "jnbe",
             "js", "jns", "jp", "jnp", "jl", "jnl", "jle", "jnle"
@@ -416,7 +368,7 @@ private:
         std::cout << jumpNames[opcode - 0x70] << ((disp >= 0) ? " $+ " : " $- ") << ((disp >= 0) ? disp + 2 : -(disp + 2)) << '\n';
     }
 
-    void decodeImmRegMem(u8 opcode) {
+    void decodeImmRegMem(u8 opcode, std::string mnemonic) {
         u8 w = opcode & 1;
         u8 s = (opcode >> 1) & 1;
 
@@ -438,16 +390,21 @@ private:
         std::cout << instr[reg] << size << " " << mem << ", " << std::to_string(data) << '\n';
     }
 
-    void decodeInOut(u8 opcode) {
-        u8 is_out = (opcode >> 2) & 1;
+    void decodeInOut(u8 opcode, std::string mnemonic) {
+        u8 is_out = (opcode >> 1) & 1;
+        u8 is_dx = (opcode >> 3) & 1;
         u8 w = opcode & 1;
 
         pc++;
-
-        std::cout << ((is_out) ? "out " : "in ") << getRegister(0, w) << ", " << std::to_string(readU8()) << '\n';
+        if (is_dx) {
+            std::cout << ((is_out) ? "out " : "in ") << ((is_out) ? "dx, " : getRegister(0, w)) << ((is_out) ? getRegister(0, w) : ", dx") << '\n';
+        } else {
+            std::cout << ((is_out) ? "out " : "in ") << ((is_out) ? std::to_string(readU8()) : getRegister(0, w)) << ", " << ((is_out) ? getRegister(0, w) : std::to_string(readU8())) << '\n';
+        }
     }
 
-    void decodeTestGroupImmRegMem(u8 opcode) {
+    void decodeGrp3(u8 opcode, std::string mnemonic) {
+        const char* instr[] = {"test", "", "not", "neg", "mul", "imul", "div", "idiv"};
         u8 w = opcode & 1;
 
         if (!isIndexValid(1)) return;
@@ -458,8 +415,6 @@ private:
         u8 rm = modrm & 7;
 
         pc += 2;
-
-        const char* instr[] = {"test", "", "not", "neg", "mul", "imul", "div", "idiv"};
 
         std::string size = (mod != 3) ? ((w) ? " word" : " byte") : "";
         std::string mem = getRM(mod, rm, w);
@@ -472,30 +427,37 @@ private:
         }
     }
 
-    void decodeMovImmToReg(u8 opcode) {
-        std::cout << "mov ";
-        decodeImmToReg(opcode);
+    void decodeGrp5(u8 opcode, std::string mnemonic) {
+        const char* instr[] =  {"inc", "dec", "call", "call", "jmp", "jmp", "push", ""};
+
+        u8 w = opcode & 1;
+
+        if (!isIndexValid(1)) return;
+
+        u8 modrm = code[pc + 1];
+        u8 mod = (modrm >> 6) & 3;
+        u8 reg = (modrm >> 3) & 7;
+        u8 rm = modrm & 7;
+
+        pc += 2;
+
+        std::cout << instr[reg] << " " << getRM(mod, rm, w ,true) << '\n';
     }
 
-    void decodeImmToReg(u8 opcode) {
+    void decodeImmToReg(u8 opcode, std::string mnemonic) {
         u8 w = (opcode >> 3) & 1;
         u8 reg = opcode & 7;
 
         pc++;
 
         if (w) {
-            std::cout << getRegister(reg, w) << ", " << std::to_string(static_cast<i16>(readU16())) << '\n';
+            std::cout << mnemonic << " " << getRegister(reg, w) << ", " << std::to_string(static_cast<i16>(readU16())) << '\n';
         } else {
-            std::cout << getRegister(reg, w) << ", " << std::to_string(static_cast<i8>(readU8())) << '\n';
+            std::cout << mnemonic << " " <<  getRegister(reg, w) << ", " << std::to_string(static_cast<i8>(readU8())) << '\n';
         }
     }
 
-    void decodeMovImmToMem(u8 opcode) {
-        std::cout << "mov ";
-        decodeImmToMem(opcode);
-    }
-
-    void decodeImmToMem(u8 opcode) {
+    void decodeImmToMem(u8 opcode, std::string mnemonic) {
         u8 w = opcode & 1;
 
         if (!isIndexValid(1)) return;
@@ -507,24 +469,43 @@ private:
         pc += 2;
 
         if (w) {
-            std::cout << getRM(mod, rm, w) << ", word " << std::to_string(readU16()) << '\n';
+            std::cout << mnemonic << " " << getRM(mod, rm, w) << ", word " << std::to_string(readU16()) << '\n';
         } else {
-            std::cout << getRM(mod, rm, w) << ", byte " << std::to_string(readU8()) << '\n';
+            std::cout << mnemonic << " " << getRM(mod, rm, w) << ", byte " << std::to_string(readU8()) << '\n';
         }
     }
 
-    void decodeInt(u8 opcode) {
+    void decodeInt(u8 opcode, std::string mnemonic) {
         const char* ints[] = {"int3", "int", "into", "iret"};
 
         pc++;
         if (opcode - 0xCC != 1) {
             std::cout << ints[opcode - 0xCC] << '\n';
         } else {
-            std::cout << ints[opcode - 0xCC] << " " << readU8() << '\n';
+            std::cout << ints[opcode - 0xCC] << " " << std::to_string(readU8()) << '\n';
         }
     }
 
-    void decodeLoop(u8 opcode) {
+    void decodeShtRot(u8 opcode, std::string mnemonic) {
+        const char* instr[] = {"rol", "ror", "rcl", "rcr", "sal", "shr", "", "sar"};
+        const char* cnt[] = {"1", "cl"};
+
+        u8 w = opcode & 1;
+        u8 count = (opcode >> 1) & 1;
+
+        if (!isIndexValid(1)) return;
+
+        u8 modrm = code[pc + 1];
+        u8 mod = (modrm >> 6) & 3;
+        u8 reg = (modrm >> 3) & 7;
+        u8 rm = modrm & 7;
+
+        pc += 2;
+
+        std::cout << instr[reg] << " " << getRM(mod, rm, w) << ", " << cnt[count] << '\n';
+    }
+
+    void decodeLoop(u8 opcode, std::string mnemonic) {
         const char* loopNames[] = {"loopne", "loope", "loop", "jcxz"};
 
         pc++;
@@ -532,46 +513,23 @@ private:
         std::cout << loopNames[opcode - 0xE0] << ((disp >= 0) ? " $+ " : " $- ") << ((disp >= 0) ? disp + 2 : -(disp + 2)) << '\n';
     }
 
-    void decodeFlagOps(u8 opcode) {
+    void decodeFlagOps(u8 opcode, std::string mnemonic) {
         const char* flagOps[] = {"clc", "stc", "cli", "sti", "cld", "std"};
 
-        std::cout << flagOps[opcode - 0xF8] << '\n';
         pc++;
+        std::cout << flagOps[opcode - 0xF8] << '\n';
     }
 
-
-    void decodeDaa(u8 opcode) { std::cout << "daa" << '\n'; pc++; }
-
-    void decodeDas(u8 opcode) { std::cout << "das" << '\n'; pc++; }
-
-    void decodeAaa(u8 opcode) { std::cout << "aaa" << '\n'; pc++; }
-
-    void decodeAas(u8 opcode) { std::cout << "aas" << '\n'; pc++; }
-
-    void decodeNop(u8 opcode) { std::cout << "nop" << '\n'; pc++; }
-
-    void decodeWait(u8 opcode) { std::cout << "wait" << '\n'; pc++; }
-
-    void decodePushf(u8 opcode) { std::cout << "pushf" << '\n'; pc++; }
-
-    void decodePopf(u8 opcode) { std::cout << "popf" << '\n'; pc++; }
-
-    void decodeSahf(u8 opcode) { std::cout << "sahf" << '\n'; pc++; }
-
-    void decodeLahf(u8 opcode) { std::cout << "lahf" << '\n'; pc++; }
-
-    void decodeRepPrefix(u8 opcode) {
+    void decodeRepPrefix(u8 opcode, std::string mnemonic) {
         u8 is_rep = opcode & 1;
 
+        pc++;
         std::cout << ((is_rep) ? "rep " : "repne ");
     }
 
+    void decodeNullaryInstruction(u8 opcode, std::string mnemonic) {std::cout << mnemonic << '\n'; pc++; }
 
-    void decodeHlt(u8 opcode) { std::cout << "htl" << '\n'; pc++; }
-
-    void decodeCmc(u8 opcode) { std::cout << "cmc" << '\n'; pc++; }
-
-    void decodeLock(u8 opcode) { std::cout << "lock "; pc++; }
+    void decodeNullaryPrefix(u8 opcode, std::string mnemonic) {std::cout << mnemonic << " "; pc++; }
 
     std::string getRegister(u8 reg, u8 w) const {
         const char* regs8[] = {"al", "cl", "dl", "bl", "ah", "ch", "dh", "bh"};
@@ -580,27 +538,29 @@ private:
         return w ? regs16[reg] : regs8[reg];
     }
 
-    std::string getRM(u8 mod, u8 rm, u8 w) {
+    std::string getRM(u8 mod, u8 rm, u8 w, bool include_size = false) {
         if (mod == 3) {
             return this->getRegister(rm, w);
         }
 
         const char* addr[] = {"bx + si", "bx + di", "bp + si", "bp + di", "si", "di", "bp", "bx"};
 
+        std::string size_prefix = include_size ? ((w) ? "word " : "byte ") : "";
+
         if (rm == 6 && mod == 0) {
-            return "[" + std::to_string(readU16()) + "]";
+            return size_prefix + "[" + std::to_string(readU16()) + "]";
         }
 
         if (mod == 1) {
-            return "[" + std::string(addr[rm]) + formatDisplacement<i8>() + "]";
+            return size_prefix + "[" + std::string(addr[rm]) + formatDisplacement<i8>() + "]";
         } else if (mod == 2) {
-            return "[" + std::string(addr[rm]) + formatDisplacement<i16>() + "]";
+            return size_prefix + "[" + std::string(addr[rm]) + formatDisplacement<i16>() + "]";
         }
 
-        return "[" + std::string(addr[rm]) + "]";
+        return size_prefix + "[" + std::string(addr[rm]) + "]";
     }
 
-    std::string getsegReg(u8 segReg) {
+    std::string getSegReg(u8 segReg) {
         const char* sregs[] = {"es", "cs", "ss", "ds"};
 
         return sregs[segReg];
