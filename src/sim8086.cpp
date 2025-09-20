@@ -31,6 +31,7 @@ public:
 private:
     std::vector<u8> code;
     std::size_t pc = 0;
+    std::string ctx = "";
 
     struct OpcodeEntry {
         void(InstructionDecoder::*handler)(u8, std::string);
@@ -158,8 +159,16 @@ private:
                 t[i] = {&InstructionDecoder::decodeMovAccMem, "mov"};
             }
 
+            for (u8 i = 0xA4; i <= 0xA7; i++) {
+                t[i] = {&InstructionDecoder::decodeStrOps, ""};
+            }
+
             for (u8 i = 0xA8; i <= 0xA9; i++) {
                 t[i] = {&InstructionDecoder::decodeAccMem, "test"};
+            }
+
+            for (u8 i = 0xAA; i <= 0xAF; i++) {
+                t[i] = {&InstructionDecoder::decodeStrOps, ""};
             }
 
             for (u8 i = 0xB0; i <= 0xBF; i++) {
@@ -202,13 +211,13 @@ private:
                 t[i] = {&InstructionDecoder::decodeFlagOps, ""};
             }
 
-            // t[0x26] = {&InstructionDecoder::decodeSegmentPrefix, "es:"};
+            t[0x26] = {&InstructionDecoder::decodeSegmentPrefix, "es:"};
             t[0x27] = {&InstructionDecoder::decodeNullaryInstruction, "daa"};
-            // t[0x2E] = {&InstructionDecoder::decodeSegmentPrefix, "cs:"};
+            t[0x2E] = {&InstructionDecoder::decodeSegmentPrefix, "cs:"};
             t[0x2F] = {&InstructionDecoder::decodeNullaryInstruction, "das"};
-            // t[0x36] = {&InstructionDecoder::decodeSegmentPrefix, "ss:"};
+            t[0x36] = {&InstructionDecoder::decodeSegmentPrefix, "ss:"};
             t[0x37] = {&InstructionDecoder::decodeNullaryInstruction, "aaa"};
-            // t[0x3E] = {&InstructionDecoder::decodeSegmentPrefix, "ds:"};
+            t[0x3E] = {&InstructionDecoder::decodeSegmentPrefix, "ds:"};
             t[0x3F] = {&InstructionDecoder::decodeNullaryInstruction, "aas"};
             t[0x8C] = {&InstructionDecoder::decodeRegSegReg, "mov"};
             t[0x8E] = {&InstructionDecoder::decodeRegSegReg, "mov"};
@@ -328,6 +337,18 @@ private:
 
         std::cout << mnemonic << " " << getRegister(0, w) << ", " << std::to_string(data) << '\n';
     }
+
+    void decodeStrOps(u8 opcode, std::string mnemonic) {
+        const char* instr[] = {"movs", "cmps", "", "stos", "lods", "scas"};
+
+        u8 w = opcode & 1;
+        u8 reg = (opcode - 0xA4) >> 1;
+
+        pc++;
+
+        std::cout << instr[reg] << ((w) ? 'w' : 'b') << '\n';
+    }
+
 
     void decodeIncDec(u8 opcode, std::string mnemonic) {
         u8 is_dec = (opcode >> 3) & 1;
@@ -528,6 +549,7 @@ private:
     }
 
     void decodeNullaryInstruction(u8 opcode, std::string mnemonic) {std::cout << mnemonic << '\n'; pc++; }
+    void decodeSegmentPrefix(u8 opcode, std::string mnemonic) {this->ctx = mnemonic; pc++; }
 
     void decodeNullaryPrefix(u8 opcode, std::string mnemonic) {std::cout << mnemonic << " "; pc++; }
 
@@ -546,18 +568,22 @@ private:
         const char* addr[] = {"bx + si", "bx + di", "bp + si", "bp + di", "si", "di", "bp", "bx"};
 
         std::string size_prefix = include_size ? ((w) ? "word " : "byte ") : "";
+        std::string segment_prefix = this->ctx;
 
         if (rm == 6 && mod == 0) {
-            return size_prefix + "[" + std::to_string(readU16()) + "]";
+            return size_prefix + segment_prefix + "[" + std::to_string(readU16()) + "]";
         }
 
         if (mod == 1) {
-            return size_prefix + "[" + std::string(addr[rm]) + formatDisplacement<i8>() + "]";
+            return size_prefix + segment_prefix + "[" + std::string(addr[rm]) + formatDisplacement<i8>() + "]";
         } else if (mod == 2) {
-            return size_prefix + "[" + std::string(addr[rm]) + formatDisplacement<i16>() + "]";
+            return size_prefix + segment_prefix + "[" + std::string(addr[rm]) + formatDisplacement<i16>() + "]";
         }
 
-        return size_prefix + "[" + std::string(addr[rm]) + "]";
+        std::string default_case = size_prefix + segment_prefix + "[" + std::string(addr[rm]) + "]";
+
+        this->ctx = "";
+        return default_case;
     }
 
     std::string getSegReg(u8 segReg) {
